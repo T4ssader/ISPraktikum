@@ -23,14 +23,12 @@ def fitness_function(x1, x2):
 
 
 '''
-Funktion zum aktualisieren der Geschwindigkeit eines Partikels
+Aktualisieren der Geschwindigkeit eines Partikels
 @:param  
     particle: Partikel dessen Geschwindigkeit aktualisiert werden soll
     velocity: momentane Geschwindigkeit
     pbest: beste bisher bekannte Position des Partikels
 '''
-
-
 def update_velocity(particle, velocity, pbest, gbest, w_min=0.5, max=1.0, c=0.1):
     # Initialise new velocity array
     new_velocity = np.array([0.0 for i in range(len(particle))])
@@ -45,7 +43,10 @@ def update_velocity(particle, velocity, pbest, gbest, w_min=0.5, max=1.0, c=0.1)
         new_velocity[i] = w * velocity[i] + c1 * r1 * (pbest[i] - particle[i]) + c2 * r2 * (gbest[i] - particle[i])
     return new_velocity
 
-
+'''
+Aktualisiert die Position des Partikels
+@:param particle: Partikel welches aktualisiert werden soll  velocity: Geschwindigkeit des aktuellen Partikels
+'''
 def update_position(particle, velocity):
     new_particle = particle + velocity
     if new_particle[0] > position_max or new_particle[0] < position_min:
@@ -54,7 +55,9 @@ def update_position(particle, velocity):
         new_particle[1] = particle[1]
     return new_particle
 
-
+'''
+Bereitet die Animation vor, muss einmal aufgerufen werden, bevor images gesichert werden können
+'''
 def plotting_preparation():
     # Plotting prepartion
     fig = plt.figure(figsize=(10, 10))
@@ -70,7 +73,16 @@ def plotting_preparation():
     ax.plot_wireframe(X, Y, Z, color='r', linewidth=0.3)
     return [ax, fig]
 
-
+'''
+Die Partikelschwarmoptimierung
+@:param
+    population: Populationsgröße/Anzahl der Partikel
+    dimension: 2  ->  Anzahl der Variablen
+    position_min: Untere Grenze des zu betrachteten Bereichs der Fitnessfunktion
+    position_max: Obere Grenze des zu betrachteten Bereichs der Fitnessfunktion
+    generation: obere Grenze der Generationen bis abgebrochen wird
+    fitness_criterion: Der Wert, welcher erreicht werden muss, damit der Algorithmus als Erfolg abbrechen darf
+'''
 def pso_2d(population, dimension, position_min, position_max, generation, fitness_criterion):
     # Population
     particles = [[random.uniform(position_min, position_max) for j in range(dimension)] for i in range(population)]
