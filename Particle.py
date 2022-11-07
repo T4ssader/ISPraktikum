@@ -15,11 +15,7 @@ Fitness Funktion zur Bestimmung der Eignung der Position eines Partikels
 
 
 def fitness_function(x1, x2):
-    # f1 = x1 + 2 * -x2 + 3
-    # f2 = 2 * x1 + x2 - 8
-    # z = f1 ** 2 + f2 ** 2
-    # return z
-    return (x1 ** 2 + x2 ** 2) / 20
+    return x1 ** 2.0 + x2 ** 2.0
 
 
 '''
@@ -29,10 +25,12 @@ Aktualisieren der Geschwindigkeit eines Partikels
     velocity: momentane Geschwindigkeit
     pbest: beste bisher bekannte Position des Partikels
 '''
+
+
 def update_velocity(particle, velocity, pbest, gbest, w_min=0.5, max=1.0, c=0.1):
-    # Initialise new velocity array
+    # Initial velocity [0,0]
     new_velocity = np.array([0.0 for i in range(len(particle))])
-    # Randomly generate r1, r2 and inertia weight from normal distribution
+    # Randomly generate r1, r2 and inertia
     r1 = random.uniform(0, max)
     r2 = random.uniform(0, max)
     w = 0.8
@@ -43,11 +41,14 @@ def update_velocity(particle, velocity, pbest, gbest, w_min=0.5, max=1.0, c=0.1)
         new_velocity[i] = w * velocity[i] + c1 * r1 * (pbest[i] - particle[i]) + c2 * r2 * (gbest[i] - particle[i])
     return new_velocity
 
+
 '''
 Aktualisiert die Position des Partikels
 @:param particle: Partikel welches aktualisiert werden soll  velocity: Geschwindigkeit des aktuellen Partikels
 '''
-def update_position(particle, velocity):
+
+
+def update_position(particle, velocity, position_min, position_max):
     new_particle = particle + velocity
     if new_particle[0] > position_max or new_particle[0] < position_min:
         new_particle[0] = particle[0]
@@ -55,12 +56,14 @@ def update_position(particle, velocity):
         new_particle[1] = particle[1]
     return new_particle
 
+
 '''
 Bereitet die Animation vor, muss einmal aufgerufen werden, bevor images gesichert werden können
 '''
-def plotting_preparation():
-    # Plotting prepartion
-    fig = plt.figure(figsize=(10, 10))
+
+
+def plotting_preparation(position_min, position_max, fitness_function):
+    fig = plt.figure(figsize=(10,10))
     ax = fig.add_subplot(111, projection='3d')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
@@ -70,11 +73,12 @@ def plotting_preparation():
     X, Y = np.meshgrid(x, y)
     Z = fitness_function(X, Y)
 
-    ax.plot_wireframe(X, Y, Z, color='r', linewidth=0.3)
+    ax.plot_wireframe(X, Y, Z, color='r', linewidth=0.35)
     return [ax, fig]
 
+
 '''
-Die Partikelschwarmoptimierung
+Die Partikelschwarmoptimierung (derzeit nur 2d)
 @:param
     population: Populationsgröße/Anzahl der Partikel
     dimension: 2  ->  Anzahl der Variablen
@@ -83,10 +87,13 @@ Die Partikelschwarmoptimierung
     generation: obere Grenze der Generationen bis abgebrochen wird
     fitness_criterion: Der Wert, welcher erreicht werden muss, damit der Algorithmus als Erfolg abbrechen darf
 '''
-def pso_2d(population, dimension, position_min, position_max, generation, fitness_criterion):
+
+
+def pso_2d(population, dimension, position_min, position_max, generation, fitness_criterion,
+           fitness_function=fitness_function, file_name='pso_main'):
     # Population
     particles = [[random.uniform(position_min, position_max) for j in range(dimension)] for i in range(population)]
-    # Particle's best position
+    # Particle best position
     particle_best_positions = particles
     # Fitness
     particle_best_fitness = [fitness_function(p[0], p[1]) for p in particles]
@@ -96,7 +103,7 @@ def pso_2d(population, dimension, position_min, position_max, generation, fitnes
     particle_velocity = [[0.0 for j in range(dimension)] for i in range(population)]
     # Animation image placeholder
     images = []
-    ax_fig = plotting_preparation()
+    ax_fig = plotting_preparation(position_min, position_max, fitness_function)
     ax = ax_fig[0]
     fig = ax_fig[1]
 
@@ -115,7 +122,7 @@ def pso_2d(population, dimension, position_min, position_max, generation, fitnes
                 particle_velocity[n] = update_velocity(particles[n], particle_velocity[n], particle_best_positions[n],
                                                        global_best_position)
                 # Move the particles to new position
-                particles[n] = update_position(particles[n], particle_velocity[n])
+                particles[n] = update_position(particles[n], particle_velocity[n], position_min, position_max)
         # Calculate fitness
         particle_best_fitness = [fitness_function(p[0], p[1]) for p in particles]
         # Find the index of the best particle
@@ -141,14 +148,17 @@ def pso_2d(population, dimension, position_min, position_max, generation, fitnes
 
     # Generate the animation image and save
     animated_image = animation.ArtistAnimation(fig, images)
-    animated_image.save('./pso_simple.gif', writer='pillow')
+    animated_image.save('./'+file_name+'.gif', writer='pillow')
+    print('\nGIF saved')
+    return global_best_position, min(particle_best_fitness)
 
 
-population = 100
-dimension = 2
-position_min = -10
-position_max = 10
-generation = 400
-fitness_criterion = 0.00004
+if __name__ == "__main__":
+    population = 100
+    dimension = 2
+    position_min = 0
+    position_max = 2
+    generation = 400
+    fitness_criterion = 0.00004
 
-pso_2d(population, dimension, position_min, position_max, generation, fitness_criterion)
+    pso_2d(population, dimension, position_min, position_max, generation, fitness_criterion)
