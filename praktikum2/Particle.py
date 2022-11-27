@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from matplotlib import animation
 import copy
 
+
 ''' 
 Fitness Funktion zur Bestimmung der Eignung der Position eines Partikels
 @:param x1: Variable1 x2: Vriable2
@@ -31,7 +32,7 @@ def update_velocity(particle, velocity, pbest, gbest, w_min=0.5, max=1.0, c=0.1)
     r1 = random.uniform(0, max)
     r2 = random.uniform(0, max)
     w = 0.8
-    c1 = c
+    c1 = 0.15
     c2 = c
 
     # Calculate new velocity
