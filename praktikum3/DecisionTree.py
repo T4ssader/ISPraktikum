@@ -1,6 +1,13 @@
 import numpy as np
-import node
 import pandas as pd
+from .node import Node
+from .Visualisation import Visualisation
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+from sklearn.datasets import load_iris
+
 
 class DecisionTreeClassifier():
     def __init__(self, min_samples_split=2, max_depth=2):
@@ -16,8 +23,11 @@ class DecisionTreeClassifier():
     def build_tree(self, dataset, curr_depth=0):
         ''' recursive function to build the tree '''
 
+        # X: arrays of data Y: classification
         X, Y = dataset[:, :-1], dataset[:, -1]
+
         num_samples, num_features = np.shape(X)
+        print("Num samples:  " + str(num_samples))
 
         # split until stopping conditions are met
         if num_samples >= self.min_samples_split and curr_depth <= self.max_depth:
@@ -26,6 +36,7 @@ class DecisionTreeClassifier():
             # check if information gain is positive
             if best_split["info_gain"] > 0:
                 # recur left
+
                 left_subtree = self.build_tree(best_split["dataset_left"], curr_depth + 1)
                 # recur right
                 right_subtree = self.build_tree(best_split["dataset_right"], curr_depth + 1)
@@ -48,6 +59,7 @@ class DecisionTreeClassifier():
         # loop over all the features
         for feature_index in range(num_features):
             feature_values = dataset[:, feature_index]
+
             possible_thresholds = np.unique(feature_values)
             # loop over all the feature values present in the data
             for threshold in possible_thresholds:
@@ -56,6 +68,7 @@ class DecisionTreeClassifier():
                 # check if childs are not null
                 if len(dataset_left) > 0 and len(dataset_right) > 0:
                     y, left_y, right_y = dataset[:, -1], dataset_left[:, -1], dataset_right[:, -1]
+
                     # compute information gain
                     curr_info_gain = self.information_gain(y, left_y, right_y, "gini")
                     # update the best split if needed
@@ -139,15 +152,39 @@ class DecisionTreeClassifier():
     def predict(self, X):
         ''' function to predict new dataset '''
 
-        preditions = [self.make_prediction(x, self.root) for x in X]
-        return preditions
+        predictions = [self.make_prediction(x, self.root) for x in X]
+        return predictions
 
     def make_prediction(self, x, tree):
         ''' function to predict a single data point '''
 
-        if tree.value != None: return tree.value
+        if tree.value is not None: return tree.value
         feature_val = x[tree.feature_index]
         if feature_val <= tree.threshold:
             return self.make_prediction(x, tree.left)
         else:
             return self.make_prediction(x, tree.right)
+
+
+
+if __name__ == "__main__":
+    col_names = ['sepal.length', 'sepal.width', 'petal.length', 'petal.width', 'variety']
+    data = pd.read_csv("datasets/iris.csv", skiprows=1, header=None, names=col_names)
+
+    X = data.iloc[:, :-1].values
+    Y = data.iloc[:, -1].values.reshape(-1, 1)
+
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=.2, random_state=41)
+
+    classifier = DecisionTreeClassifier(min_samples_split=3, max_depth=3)
+    classifier.fit(X_train, Y_train)
+    classifier.print_tree()
+
+    viz = Visualisation(classifier, data)
+
+
+    viz.save()
+
+    Y_pred = classifier.predict(X_test)
+
+    # print(accuracy_score(Y_test, Y_pred))
