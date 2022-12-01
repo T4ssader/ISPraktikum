@@ -36,9 +36,9 @@ class Visualisation():
                     node.left.info_gain)
                 self._build_tree(node.left)
                 if node.left.value is None:
-                    self.dot.edge(node_name, left_name)
+                    self.dot.edge(node_name, left_name, label="yes")
                 else:
-                    self.dot.edge(node_name, self.curr_parent_node)
+                    self.dot.edge(node_name, self.curr_parent_node, label="yes")
 
             if node.right is not None:
 
@@ -48,9 +48,9 @@ class Visualisation():
                 self.curr_parent_node = node_name
                 self._build_tree(node.right)
                 if node.right.value is None:
-                    self.dot.edge(node_name, right_name)
+                    self.dot.edge(node_name, right_name, label="no")
                 else:
-                    self.dot.edge(node_name, self.curr_parent_node)
+                    self.dot.edge(node_name, self.curr_parent_node, label="no")
         else:
             node_name = str(self.counter)
             self.dot.node(node_name, label=str(node.value))
