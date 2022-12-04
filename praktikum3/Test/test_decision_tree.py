@@ -79,7 +79,7 @@ def test_diabetes_tree():
 
 
 def test_healthcare_stroke_tree():
-    healthcare_dt = DecisionTreeClassifier(min_samples_split=135, max_depth=3)
+    healthcare_dt = DecisionTreeClassifier(min_samples_split=135, max_depth=4)
     healthcare_dt.fit(healthcare_X_train, healthcare_Y_train)
 
     healthcare_viz = Visualisation.Visualisation(healthcare_dt, healthcare_data)
